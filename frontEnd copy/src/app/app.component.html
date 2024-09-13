@@ -1,0 +1,48 @@
+<div class="layout-wrapper">
+  <div class="layout-topbar">
+    <a class="layout-topbar-logo" target="_blank">
+        <img src="../assets/img/ipf.jpg" alt="logo">
+        <app-svg></app-svg>
+        <!-- <span>IPF</span> -->
+    </a>
+
+    <button class="p-link layout-menu-button layout-topbar-button" pTooltip="Inicio" tooltipPosition="top" [routerLink]="''" skipLocationChange>
+        <i class="pi pi-home"></i>
+    </button>
+
+    <button class="p-link layout-topbar-menu-button layout-topbar-button">
+        <i class="pi pi-ellipsis-v"></i>
+    </button>
+
+    <div class="layout-topbar-menu">
+        <button class="p-link layout-topbar-button" pTooltip="Operaciones" tooltipPosition="top"  [routerLink]="'/gastos'" skipLocationChange>
+            <i class="pi pi-chart-line"></i>
+        </button>
+        <button class="p-link layout-topbar-button" pTooltip="Inventario" tooltipPosition="top" [routerLink]="'/productos'" skipLocationChange>
+            <i class="pi pi-book"></i>
+        </button>
+        <button class="p-link layout-topbar-button" pTooltip="Impuestos" tooltipPosition="top" [routerLink]="'/impuestos'" skipLocationChange>
+            <i class="pi pi-money-bill"></i>
+        </button>
+        <button class="p-link layout-topbar-button" pTooltip="Libros" tooltipPosition="top" [routerLink]="'/facturacion'" skipLocationChange>
+            <i class="pi pi-desktop"></i>
+        </button>
+        <button class="p-link layout-topbar-button" pTooltip="Estadísticas" tooltipPosition="top" [routerLink]="'/graficas'" skipLocationChange>
+            <i class="pi pi-chart-bar"></i>
+        </button>
+        <button class="p-link layout-topbar-button" pTooltip="Ajustes" tooltipPosition="top">
+            <i class="pi pi-cog"></i>
+        </button>
+    </div>
+  </div>
+  <!-- <div class="layout-sidebar"> -->
+      <!-- <app-sidebar></app-sidebar> -->
+  <!-- </div> -->
+  <div class="layout-main-container">
+      <div class="layout-main">
+        <router-outlet></router-outlet>
+      </div>
+      <app-footer></app-footer>
+  </div>
+  <div class="layout-mask"></div>
+</div>

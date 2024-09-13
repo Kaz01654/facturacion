@@ -1,0 +1,140 @@
+<ngx-spinner type="ball-atom"></ngx-spinner>
+<p-table #dt
+  [value]="info"
+  [responsive]="true"
+  [paginator]="true"
+  [rows]="filas"
+  [loading]="loading"
+  [columns]="columnas"
+  [resizableColumns]="true"
+  sortMode="multiple"
+  styleClass="p-datatable-striped"
+  columnResizeMode="expand"
+  [scrollable]="true"
+  scrollHeight="300px"
+  [rowsPerPageOptions]="[5, 10, 20, 50, 100]"
+  [globalFilterFields]="['descripcion', 'valor', 'cantidad', 'fecha_op']">
+  <ng-template pTemplate="caption">
+    <div class="table-header">
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" [style]="{'width': '130px'}" placeholder="Busqueda..." [disabled]="loading" />
+      </span>
+      <p-calendar [(ngModel)]="fecha_datos" (onSelect)="poblarTabla($event)" (onClearClick)="poblarTabla($event.target.value)" placeholder="Todos los registros" [style]="{'margin-left': '5px', 'width': '130px'}" [showIcon]="true" [showTransitionOptions]="'225ms'" [hideTransitionOptions]="'198ms'" [locale]="es" dateFormat="yy-mm-dd" showButtonBar="true" [readonlyInput]="true" [baseZIndex]="9999" appendTo="body"></p-calendar>
+      <p-dropdown [options]="listProd" [(ngModel)]="prod" (onChange)="agregarProd($event.value)" [style]="{'margin-left': '5px'}" placeholder="Seleccione Producto" [showTransitionOptions]="'225ms'" [hideTransitionOptions]="'198ms'" [baseZIndex]="9999" appendTo="body"></p-dropdown>
+      <button type="button" pButton icon="pi pi-external-link" iconPos="left" (click)="open(content, 'Variado')" label="Variado" style="margin-left: 5px;" pTooltip="Agregar Variado" tooltipPosition="bottom" [disabled]="loading" class="p-button-success"></button>
+      <button type="button" pButton icon="pi pi-print" iconPos="left" (click)="openCopy()" label="Copia" style="margin-left: 5px;" pTooltip="Agregar Copia" tooltipPosition="bottom" [disabled]="loading" class="p-button-success"></button>
+      <button type="button" pButton icon="pi pi-print" iconPos="left" (click)="openPlotter()" label="Plotter" style="margin-left: 5px;" pTooltip="Agregar Plotter" tooltipPosition="bottom" [disabled]="loading" class="p-button-success"></button>
+      <button type="button" pButton icon="pi pi-money-bill" iconPos="left" (click)="open(content, 'Compra')" label="Compras" style="margin-left: 5px;" pTooltip="Agregar Compra" tooltipPosition="bottom" [disabled]="loading" class="p-button-danger"></button>
+      <button type="button" pButton icon="pi pi-shopping-cart" iconPos="left" (click)="open(content, 'Gasto')" label="Gastos" style="margin-left: 5px;" pTooltip="Agregar Gasto" tooltipPosition="bottom" [disabled]="loading" class="p-button-danger"></button>
+      <button *ngIf="info" type="button" pButton icon="pi pi-file" iconPos="left" (click)="descargarCSV(info, 'Informe')" style="margin-left: 5px;" pTooltip="Descargar CSV" tooltipPosition="bottom" [disabled]="loading" class="p-button-secondary"></button>
+      <button *ngIf="info" type="button" pButton icon="pi pi-file-excel" iconPos="left" (click)="descargarExcel()" style="margin-left: 5px;" pTooltip="Descargar Excel" tooltipPosition="bottom" [disabled]="loading" class="p-button-success"></button>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="header" let-columns>
+    <tr>
+      <th *ngFor="let columnas of columns" pResizableColumn style="width: 11em" class="text-center"
+        pSortableColumn="{{columnas.field}}">{{columnas.header}} <p-sortIcon field="{{columnas.field}}"></p-sortIcon>
+      </th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-info>
+    <tr class="slide-in">
+      <td class="text-center">{{ info.descripcion }}</td>
+      <td class="text-center">
+        <div [ngClass]="{'gasto': info.tipo === 2, 'ingreso': info.tipo === 1}">
+          L. {{ info.valor | number: '1.2-2'}}
+        </div>
+      </td>
+      <td class="text-center">{{ info.cantidad }}</td>
+      <td class="text-center">{{ info.fecha_op | date:"yyyy-MM-dd"}}</td>
+      <td class="text-center">{{ info.fecha_registro | date}}</td>
+      <td class="text-center">
+        <button *ngIf="info.categoria === 3 || info.categoria === 4" style="margin-right: .5rem" pTooltip="Editar Operacion" (click)="openCoPoUpdate(info)" tooltipPosition="bottom" icon="pi pi-pencil" iconPos="left" pButton type="button" class="p-button-rounded p-button-success"></button>
+        <button *ngIf="info.categoria === 2 || info.categoria === 5 || info.categoria === 6" style="margin-right: .5rem" pTooltip="Editar Operacion" (click)="openUpdate(content, info)" tooltipPosition="bottom" icon="pi pi-pencil" iconPos="left" pButton type="button" class="p-button-rounded p-button-success"></button>
+        <button *ngIf="info.categoria === 1" style="margin-right: .5rem" pTooltip="Editar Operacion" (click)="openProdUpdate(info)" tooltipPosition="bottom" icon="pi pi-pencil" iconPos="left" pButton type="button" class="p-button-rounded p-button-success"></button>
+        <button style="margin-right: .5rem" pTooltip="Eliminar Operacion" (click)="deleteGasto(info.id)" tooltipPosition="bottom" icon="pi pi-trash" iconPos="left" pButton type="button" class="p-button-rounded p-button-danger"></button>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="footer">
+    <tr class="text-center letra">
+      <th pResizableColumn colspan="1">Productos</th>
+      <th pResizableColumn colspan="1">Variados</th>
+      <th pResizableColumn colspan="1">Copias</th>
+      <th pResizableColumn colspan="1">Plotter</th>
+      <th pResizableColumn colspan="1">Compras</th>
+      <th pResizableColumn colspan="1">Gastos</th>
+    </tr>
+    <tr class="text-center letra">
+      <th pResizableColumn colspan="1">L. {{ total_prod | number: '1.2-2' }}</th>
+      <th pResizableColumn colspan="1">L. {{ total_var | number: '1.2-2' }}</th>
+      <th pResizableColumn colspan="1">L. {{ total_copy | number: '1.2-2' }}</th>
+      <th pResizableColumn colspan="1">L. {{ total_plot | number: '1.2-2' }}</th>
+      <th pResizableColumn colspan="1">L. {{ total_comp | number: '1.2-2' }}</th>
+      <th pResizableColumn colspan="1">L. {{ total_gast | number: '1.2-2' }}</th>
+    </tr>
+    <tr class="text-center letra">
+      <th pResizableColumn colspan="2">Total Ingresos</th>
+      <th pResizableColumn colspan="2">Total Gastos</th>
+      <th pResizableColumn colspan="2">Ganancia o Perdida</th>
+    </tr>
+    <tr class="text-center letra">
+      <th pResizableColumn colspan="2" [ngClass]="'ingreso'">L. {{ total_ing | number: '1.2-2' }}</th>
+      <th pResizableColumn colspan="2" [ngClass]="'gasto'">L. {{ total_gastos | number: '1.2-2' }}</th>
+      <th pResizableColumn colspan="2" [ngClass]="{'gasto': total_ing < total_gastos, 'ingreso': total_ing > total_gastos, 'neutral': total_ing == total_gastos}">L. {{ total_resultado | number: '1.2-2' }}</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage" let-columns>
+    <tr>
+      <td [attr.colspan]="columns.length">
+      <h4>No hay datos</h4>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<ng-template #content let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">{{ titleModal }}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="container overflow-hidden text-center">
+      <div class="row gy-5">
+        <div class="col-6">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-info-circle"></i></span>
+            <input type="text" pInputText [(ngModel)]="desc" placeholder="Descripcion">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon">L.</span>
+            <p-inputNumber mode="decimal" [minFractionDigits]="2" locale="en-US" [(ngModel)]="valor" placeholder="Valor"></p-inputNumber>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-plus-circle"></i></span>
+            <p-inputNumber [showButtons]="true" [min]="1" [max]="1000" [(ngModel)]="cant" placeholder="Cantidad"></p-inputNumber>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-calendar-times"></i></span>
+            <p-calendar [(ngModel)]="fecha_op" [showTransitionOptions]="'225ms'" [hideTransitionOptions]="'198ms'" [locale]="es" dateFormat="yy-mm-dd" showButtonBar="true" [readonlyInput]="true" [baseZIndex]="9999" appendTo="body"></p-calendar>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button *ngIf="op=='Add'" type="button" class="btn btn-outline-primary" (click)="agregarGasto()">{{ textBottom }}</button>
+    <button *ngIf="op=='Edit'" type="button" class="btn btn-outline-success" (click)="editarGasto()">{{ textBottom }}</button>
+    <button type="button" class="btn btn-outline-info" (click)="clean()">{{ btnClean }}</button>
+    <button type="button" class="btn btn-outline-dark" (click)="c('Close click')">{{ lbBtnModal }}</button>
+  </div>
+</ng-template>

@@ -1,0 +1,9 @@
+<div class="card">
+  <div class="p-fluid p-formgrid grid">
+    <div class="field col-12 md:col-3">
+      <p-dropdown appendTo="body" [options]="listYear" [(ngModel)]="year" (onChange)="poblarGrafica($event.value)" [filter]="true" [showClear]="true" filterBy="label" placeholder="Seleccione Año"></p-dropdown>
+    </div>
+    <div class="field col-12 md:col-12">
+      <div id="contenedor" [chart]="chart"></div>
+  </div>
+</div>

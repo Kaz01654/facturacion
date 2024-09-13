@@ -1,0 +1,119 @@
+<div class="card" style="text-align: center;">
+  <p-table #dt
+    [tableStyle]="{ 'min-width': '50rem' }"
+    styleClass="p-datatable-gridlines p-datatable-striped"
+    [value]="info"
+    [rows]="filas"
+    [loading]="loading"
+    [columns]="columnas"
+    [paginator]="true"
+    [showCurrentPageReport]="true"
+    [resizableColumns]="true"
+    columnResizeMode="expand"
+    [rowsPerPageOptions]="[5, 10, 20, 50, 100]"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos"
+    scrollHeight="300px"
+    [globalFilterFields]="['nombre_prod', 'precio_prod']">
+    <ng-template pTemplate="caption">
+      <div class="mr-3" style="display: flex">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input style="width: auto!important;" type="text" pInputText size="20" placeholder="Búsqueda..." (input)="dt.filterGlobal($any($event.target).value, 'contains')" >
+        </span>
+        <p-button class="p-button-info margen" pTooltip="Agregar Producto" [raised]="true" tooltipPosition="bottom" label="Agregar" icon="pi pi-external-link" [loading]="loading" [disabled]="loading"  (onClick)="open()"></p-button>
+        <p-button *ngIf="info" icon="pi pi-file" (onClick)="descargarCSV(info, 'Informe')" class="margen" pTooltip="Descargar CSV" tooltipPosition="bottom" [disabled]="loading" severity="secondary"></p-button>
+        <p-button *ngIf="info" icon="pi pi-file-excel" (onClick)="descargarExcel()" class="margen" pTooltip="Descargar Excel" tooltipPosition="bottom" [disabled]="loading" severity="success"></p-button>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header" let-columns>
+      <tr>
+        <th *ngFor="let col of columns" pResizableColumn style="width: 11em" class="text-center"
+          pSortableColumn="{{col.field}}">{{col.header}} <p-sortIcon field="{{col.field}}"></p-sortIcon>
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-info>
+      <tr class="animate__animated animate__fadeInLeft">
+        <td class="text-center">{{ info.nombre_prod }}</td>
+        <td class="text-center">
+          <div [ngClass]="{'outofstockzero': info.cant_prod === 0, 'outofstock': (info.cant_prod > 0 && info.cant_prod < 10), 'lowstock': (info.cant_prod >= 10 && info.cant_prod < 20),'instock': info.cant_prod >= 20}">
+            {{info.cant_prod}}
+          </div>
+        </td>
+        <td class="text-center">L. {{ info.precio_prod | number: '1.2-2'}}</td>
+        <td class="text-center">{{ info.impuesto | percent}}</td>
+        <td class="text-center">L. {{ info.ganancia_prod | number: '1.2-2'}}</td>
+        <td class="text-center">
+          <p-button pTooltip="Editar Producto" tooltipPosition="bottom" icon="pi pi-pencil" [rounded]="true" class="margen2" (onClick)="openUpdate(info)" severity="success"></p-button>
+          <p-button pTooltip="Eliminar Producto" tooltipPosition="bottom" icon="pi pi-trash" [rounded]="true" class="margen2" (onClick)="deleteProd(info.id_prod)" severity="danger"></p-button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage" let-columns>
+      <tr>
+        <td [attr.colspan]="columns.length">
+        <h4>No hay productos</h4>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<ngx-spinner
+  bdColor = "rgba(0, 0, 0, 0.8)"
+  size = "large"
+  color = "#fff"
+  type = "ball-atom"
+  [fullScreen] = "true">
+</ngx-spinner>
+
+<p-dialog
+header="Header"
+[(visible)]="visible"
+[modal]="true"
+[baseZIndex]="10000"
+[breakpoints]="{ '960px': '75vw' }"
+[style]="{ width: '50vw' }"
+[draggable]="false"
+[resizable]="false">
+  <ng-template ng-template pTemplate="header">
+    <div class="inline-flex align-items-center justify-content-center gap-2">
+      <h4>{{ titleModal }}</h4>
+    </div>
+  </ng-template>
+  <div class="p-fluid p-formgrid grid">
+    <div class="field col-12 md:col-6">
+      <div class="p-inputgroup">
+        <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="Nombre"><i class="pi pi-shopping-cart"></i></span>
+        <input type="text" pInputText [(ngModel)]="nombreProd" placeholder="Nombre">
+      </div>
+    </div>
+    <div class="field col-12 md:col-6">
+      <p-dropdown appendTo="body" [options]="listImp" [(ngModel)]="imp"  [filter]="true" [showClear]="true" filterBy="label" placeholder="Seleccione Impuesto"></p-dropdown>
+    </div>
+    <div class="field col-12 md:col-4">
+      <div class="p-inputgroup">
+        <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="Cantidad"><i class="pi pi-plus-circle"></i></span>
+        <p-inputNumber [showButtons]="true" [min]="0" [max]="1000" [(ngModel)]="cantProd" placeholder="Cantidad"></p-inputNumber>
+      </div>
+    </div>
+    <div class="field col-12 md:col-4">
+      <div class="p-inputgroup">
+        <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="Costo"><i class="pi pi-money-bill"></i></span>
+        <p-inputNumber mode="decimal" [minFractionDigits]="2" locale="en-US" [(ngModel)]="precioProd" placeholder="Costo"></p-inputNumber>
+      </div>
+    </div>
+    <div class="field col-12 md:col-4">
+      <div class="p-inputgroup">
+        <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="Utilidad"><i class="pi pi-money-bill"></i></span>
+        <p-inputNumber mode="decimal" [minFractionDigits]="2" locale="en-US" [(ngModel)]="gancProd" placeholder="Utilidad"></p-inputNumber>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button *ngIf="op=='Add'" icon="pi pi-check" (onClick)="agregarProd()" [raised]="true" label="{{ textBottom }}" severity="primary"></p-button>
+    <p-button *ngIf="op=='Edit'" icon="pi pi-search" (onClick)="editarProd()" [raised]="true" label="{{ textBottom }}" severity="success"></p-button>
+    <p-button icon="pi pi-eraser" (onClick)="clean()" [raised]="true" label="{{ btnClean }}" severity="secondary"></p-button>
+    <p-button icon="pi pi-times" (onClick)="closeDialog()" [raised]="true" label="Cancelar" severity="danger"></p-button>
+  </ng-template>
+</p-dialog>

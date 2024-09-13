@@ -1,0 +1,296 @@
+<div class="card" style="text-align: center;">
+  <p-table #dt
+    dataKey="id"
+    (onRowExpand)="onRowExpand($event)"
+    (onRowCollapse)="onRowCollapse($event)"
+    [tableStyle]="{ 'min-width': '60rem' }"
+    [value]="info"
+    [rows]="filas"
+    [loading]="loading"
+    [paginator]="true"
+    [showCurrentPageReport]="true"
+    [resizableColumns]="true"
+    columnResizeMode="expand"
+    [rowsPerPageOptions]="[5, 10, 20, 50, 100]"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} facturas"
+    scrollHeight="300px"
+    [globalFilterFields]="['cliente_fact', 'total_fact', 'fecha_fact']">
+    <ng-template pTemplate="caption">
+      <div class="mr-3" style="display: flex">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input style="width: auto!important;" type="text" pInputText size="20" placeholder="Búsqueda..." (input)="dt.filterGlobal($any($event.target).value, 'contains')" >
+        </span>
+        <p-button class="p-button-info margen" pTooltip="Nueva factura" [raised]="true" tooltipPosition="bottom" label="Nueva Factura" icon="pi pi-external-link" [loading]="loading" [disabled]="loading"  (onClick)="open()"></p-button>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 5rem"></th>
+        <th pSortableColumn="cliente_fact">Cliente <p-sortIcon field="cliente_fact"/></th>
+        <th pSortableColumn="total_fact">Total <p-sortIcon field="total_fact"/></th>
+        <th pSortableColumn="fecha_fact">Fecha <p-sortIcon field="fecha_fact"/></th>
+        <th pSortableColumn="acciones">Acciones <p-sortIcon field="acciones"/></th>
+    </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-info let-expanded="expanded">
+      <tr class="animate__animated animate__fadeInLeft">
+        <td>
+          <p-button type="button" pRipple [pRowToggler]="info" [text]="true" [rounded]="true" [plain]="true" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"/>
+        </td>
+        <td class="text-center">{{ info.cliente_fact }}</td>
+        <td class="text-center">L. {{ info.total_fact | number: '1.2-2'}}</td>
+        <td class="text-center">{{ info.fecha_fact }}</td>
+        <td class="text-center">
+          <p-button pTooltip="Editar Factura" tooltipPosition="bottom" icon="pi pi-pencil" [rounded]="true" class="margen2" (onClick)="openUpdate(info)" severity="success"></p-button>
+          <p-button pTooltip="Eliminar Factura" tooltipPosition="bottom" icon="pi pi-trash" [rounded]="true" class="margen2" (onClick)="deleteFact(info.id_fact)" severity="danger"></p-button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="rowexpansion" let-items>
+      <tr>
+        <td colspan="7">
+          <div class="p-3">
+            <p-table [value]="items.id_prod" dataKey="id">
+              <ng-template pTemplate="header">
+                  <tr>
+                    <th pSortableColumn="nombre_prod">Nombre <p-sortIcon field="nombre_prod"/></th>
+                    <th pSortableColumn="cant_prod">Cant <p-sortIcon field="cant_prod"/></th>
+                    <th pSortableColumn="precio_prod">Precio <p-sortIcon field="precio_prod"/></th>
+                    <th pSortableColumn="total">Total <p-sortIcon field="total"/></th>
+                    <th style="width: 4rem"></th>
+                  </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-items>
+                  <tr>
+                    <td>{{ items.nombre_prod }}</td>
+                    <td>{{ items.cant_prod }}</td>
+                    <td>{{ items.precio_prod | number: '1.2-2' }}</td>
+                    <td>{{ items.total | number: '1.2-2' }}</td>
+                  </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                  <tr>
+                      <td colspan="5">No hay facturas.</td>
+                  </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<ngx-spinner
+  bdColor = "rgba(0, 0, 0, 0.8)"
+  size = "large"
+  color = "#fff"
+  type = "ball-atom"
+  [fullScreen] = "true">
+</ngx-spinner>
+
+<p-dialog
+header="Header"
+[(visible)]="visible"
+[modal]="true"
+[baseZIndex]="10000"
+[breakpoints]="{ '960px': '75vw' }"
+[style]="{ width: '90vw' }"
+[draggable]="false"
+[resizable]="false">
+  <ng-template ng-template pTemplate="header">
+    <div class="inline-flex align-items-center justify-content-center gap-2">
+      <h4>{{ titleModal }}</h4>
+    </div>
+  </ng-template>
+  <div class="card">
+    <div class="p-fluid p-formgrid grid">
+      <div class="field col-12 md:col-2">
+        <p-toggleButton
+          [(ngModel)]="checked"
+          (onChange)="handleOnChangeToggle($event)"
+          onLabel="Existe"
+          offLabel="Nuevo"
+          [onIcon]="iconOn"
+          [offIcon]="iconOff"
+          styleClass="w-9rem"
+          ariaLabel="Do you confirm"/>
+      </div>
+      <div *ngIf="!checked" class="field col-12 md:col-5">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="Cliente"><i class="pi pi-user"></i></span>
+          <input type="text" pInputText [(ngModel)]="cliente_fact" placeholder="Cliente">
+        </div>
+      </div>
+      <div *ngIf="checked" class="field col-12 md:col-5">
+        <p-dropdown appendTo="body" [options]="listClient" [(ngModel)]="client" (onChange)="handleOnChange($event)" [filter]="true" [showClear]="true" filterBy="label" placeholder="Seleccione Cliente"></p-dropdown>
+      </div>
+      <div class="field col-12 md:col-5">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="Direccion"><i class="pi pi-map-marker"></i></span>
+          <textarea id="float-input" rows="3" cols="30" [(ngModel)]="direccionClient" [disabled]="checked" pInputTextarea></textarea>
+        </div>
+      </div>
+      <div class="field col-12 md:col-3">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="Correo"><i class="pi pi-send"></i></span>
+          <input type="text" pInputText [(ngModel)]="correoClient" placeholder="Correo" [disabled]="checked">
+        </div>
+      </div>
+      <div class="field col-12 md:col-3">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="Contacto"><i class="pi pi-phone"></i></span>
+          <input type="text" pInputText [(ngModel)]="contactoClient" placeholder="Contacto" [disabled]="checked">
+        </div>
+      </div>
+      <div class="field col-12 md:col-3">
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="RTN"><i class="pi pi-id-card"></i></span>
+          <input type="text" pInputText [(ngModel)]="rtnClient" placeholder="RTN" [disabled]="checked">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <p-table #dtItems
+    [tableStyle]="{ 'min-width': '50rem' }"
+    styleClass="p-datatable-gridlines p-datatable-striped"
+    [value]="itemsArr"
+    [rows]="filasItems"
+    [columns]="columnasItems"
+    [showCurrentPageReport]="true"
+    [resizableColumns]="true"
+    columnResizeMode="expand"
+    scrollHeight="300px">
+    <ng-template pTemplate="caption">
+      <div class="mr-3" style="display: flex">
+        <p-dropdown [options]="listProd" [(ngModel)]="prod" (onChange)="addItemProd($event.value)" [filter]="true" [showClear]="true" filterBy="label" [style]="{'margin-left': '5px'}" placeholder="Seleccione Producto" appendTo="body"></p-dropdown>
+        <p-button class="margen" (onClick)="addItem()" pTooltip="Nuevo Item" [raised]="true" tooltipPosition="bottom" label="Nuevo Item" icon="pi pi-plus" severity="success"></p-button>
+        <p-button class="margen" (onClick)="clearItems()" pTooltip="Limpiar Items" [raised]="true" tooltipPosition="bottom" label="Limpiar" icon="pi pi-eraser" severity="secondary"></p-button>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header" let-columns>
+      <tr>
+        <th *ngFor="let col of columns" pResizableColumn style="width: 11em" class="text-center">{{col.header}}</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-itemsArr let-editing="editing">
+      <tr class="animate__animated animate__fadeInLeft">
+        @if(itemsArr.tipo) {
+          <td class="text-center" [pEditableColumn]="itemsArr.nombre_item" pEditableColumnField="nombre_item">
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <input pInputText type="text" [(ngModel)]="itemsArr.nombre_item"/>
+              </ng-template>
+              <ng-template pTemplate="output">
+                {{ itemsArr.nombre_item }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="text-center" [pEditableColumn]="itemsArr.cant_item" pEditableColumnField="cant_item">
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <p-inputNumber [showButtons]="true" [min]="1" [max]="1000" [(ngModel)]="itemsArr.cant_item" (onInput)="operationCant($event, itemsArr)"></p-inputNumber>
+              </ng-template>
+              <ng-template pTemplate="output">
+                {{ itemsArr.cant_item }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="text-center" [pEditableColumn]="itemsArr.precio_item" pEditableColumnField="precio_item">
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <p-inputNumber mode="decimal" [minFractionDigits]="2" locale="en-US" [(ngModel)]="itemsArr.precio_item" (onInput)="operationPrecio($event, itemsArr)"></p-inputNumber>
+              </ng-template>
+              <ng-template pTemplate="output">
+                L. {{ itemsArr.precio_item | number: '1.2-2' }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+        } @else {
+          <td class="text-center">{{ itemsArr.nombre_item }}</td>
+          <td class="text-center" [pEditableColumn]="itemsArr.cant_item" pEditableColumnField="cant_item">
+            <p-cellEditor>
+              <ng-template pTemplate="input">
+                <p-inputNumber [showButtons]="true" [min]="1" max="{{ itemsArr.cant_total_item }}" [(ngModel)]="itemsArr.cant_item" (onInput)="operationCant($event, itemsArr)"></p-inputNumber>
+              </ng-template>
+              <ng-template pTemplate="output">
+                {{ itemsArr.cant_item }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="text-center">L. {{ itemsArr.precio_item | number: '1.2-2' }}</td>
+        }
+        <td class="text-center">L. {{ itemsArr.total_item | number: '1.2-2' }}</td>
+        <td class="text-center">
+          <p-button (onClick)="deleteItem(itemsArr)" pTooltip="Eliminar Item" tooltipPosition="bottom" icon="pi pi-times" [rounded]="true" class="margen2" severity="danger"></p-button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage" let-columns>
+      <tr>
+        <td [attr.colspan]="columns.length">
+        <h4>No hay items</h4>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+      <div class="p-fluid p-formgrid grid">
+        <div class="field col-12 md:col-6">
+          <div class="card">
+            <ul class="list-none p-0 m-0">
+              <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                <div>
+                  <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Sub Total</span>
+                </div>
+                <div class="mt-2 md:mt-0 flex align-items-center">
+                  <span class="text-white-500 ml-3 font-medium">L. {{ sub_total_fact | number: '1.2-2' }} </span>
+                </div>
+              </li>
+              <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                  <div>
+                      <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Impuesto(30%)</span>
+                  </div>
+                  <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
+                      <span class="text-green-500 ml-3 font-medium">L. {{ tax_fact | number: '1.2-2' }}</span>
+                  </div>
+              </li>
+              <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                  <div>
+                      <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Total</span>
+                  </div>
+                  <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
+                      <span class="text-white-500 ml-3 font-medium">L. {{ total_fact | number: '1.2-2' }}</span>
+                  </div>
+              </li>
+              <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                  <div>
+                      <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Pago realizado</span>
+                  </div>
+                  <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
+                      <span class="text-red-500 ml-3 font-medium">L. {{ pago_fact | number: '1.2-2' }}</span>
+                  </div>
+              </li>
+              <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                  <div>
+                      <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Saldo</span>
+                  </div>
+                  <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
+                      <span class="text-white-500 ml-3 font-medium">L. {{ saldo_fact | number: '1.2-2' }}</span>
+                  </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+  </p-table>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button *ngIf="op=='Add'" icon="pi pi-spin pi-sync" (onClick)="agregarFact()" [raised]="true" label="{{ textBottom }}" severity="primary"></p-button>
+    <p-button *ngIf="op=='Edit'" icon="pi pi-search" (onClick)="editarFact()" [raised]="true" label="{{ textBottom }}" severity="success"></p-button>
+    <p-button icon="pi pi-eraser" (onClick)="cleanFactura()" [raised]="true" label="{{ btnClean }}" severity="secondary"></p-button>
+    <p-button icon="pi pi-times" (onClick)="closeDialog()" [raised]="true" label="Cancelar" severity="danger"></p-button>
+  </ng-template>
+</p-dialog>

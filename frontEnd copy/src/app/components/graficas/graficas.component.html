@@ -1,0 +1,15 @@
+<p-card>
+  <p-header>
+    <div class="container overflow-hidden text-center">
+      <div class="row gy-5">
+        <div class="col-6">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-calendar"></i></span>
+            <p-dropdown [options]="listYear" [(ngModel)]="year" (onChange)="poblarGrafica($event.value)" placeholder="Seleccione Año" [showTransitionOptions]="'225ms'" [hideTransitionOptions]="'198ms'" [baseZIndex]="9999" appendTo="body"></p-dropdown>
+          </div>
+        </div>
+      </div>
+    </div>
+  </p-header>
+  <div id="contenedor" [chart]="chart"></div>
+</p-card>

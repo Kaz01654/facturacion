@@ -1,0 +1,161 @@
+<ngx-spinner type="ball-atom"></ngx-spinner>
+<p-table #dt
+  [value]="info"
+  [responsive]="true"
+  [paginator]="true"
+  [rows]="filas"
+  [loading]="loading"
+  [columns]="columnas"
+  [resizableColumns]="true"
+  sortMode="multiple"
+  styleClass="p-datatable-striped"
+  columnResizeMode="expand"
+  [scrollable]="true"
+  scrollHeight="300px"
+  [rowsPerPageOptions]="[5, 10, 20, 50, 100]"
+  [globalFilterFields]="['nombre_prod', 'precio_prod']">
+  <ng-template pTemplate="caption">
+    <div class="table-header">
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input pInputText type="text" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Busqueda..." [disabled]="loading" />
+      </span>
+      <button type="button" pButton icon="pi pi-external-link" iconPos="left" (click)="open(content)" label="Agregar" style="margin-left: 5px;" pTooltip="Agregar Producto" tooltipPosition="bottom" [disabled]="loading" class="p-button-info"></button>
+      <button *ngIf="info" type="button" pButton icon="pi pi-file" iconPos="left" (click)="descargarCSV(info, 'Informe')" style="margin-left: 5px;" pTooltip="Descargar CSV" tooltipPosition="bottom" [disabled]="loading" class="p-button-secondary"></button>
+      <button *ngIf="info" type="button" pButton icon="pi pi-file-excel" iconPos="left" (click)="descargarExcel()" style="margin-left: 5px" pTooltip="Descargar Excel" tooltipPosition="bottom" [disabled]="loading" class="p-button-success"></button>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="header" let-columns>
+    <tr>
+      <th *ngFor="let columnas of columns" pResizableColumn style="width: 11em" class="text-center"
+        pSortableColumn="{{columnas.field}}">{{columnas.header}} <p-sortIcon field="{{columnas.field}}"></p-sortIcon>
+      </th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-info>
+    <tr class="slide-in">
+      <td class="text-center">{{ info.nombre_prod }}</td>
+      <td class="text-center">
+        <img *ngIf="info.img_prod" [src]="getSafeUrl(info.img_prod)" (click)="openImgModal(contentImg, info)" [alt]="info.img_prod" width="60" class="p-shadow-4 roundImg" style="cursor: pointer"/>
+        <img *ngIf="info.img_prod==''" [src]='iconoNoImg' class="roundImg"/>
+      </td>
+      <td class="text-center">
+        <div [ngClass]="{'outofstockzero': info.cant_prod === 0, 'outofstock': (info.cant_prod > 0 && info.cant_prod < 10), 'lowstock': (info.cant_prod >= 10 && info.cant_prod < 20),'instock': info.cant_prod >= 20}">
+          {{info.cant_prod}}
+        </div>
+      </td>
+      <td class="text-center">L. {{ info.precio_prod | number: '1.2-2'}}</td>
+      <td class="text-center">{{ info.impuesto | percent}}</td>
+      <td class="text-center">L. {{ info.ganancia_prod | number: '1.2-2'}}</td>
+      <td class="text-center">
+        <button style="margin-right: .5rem" pTooltip="Editar Producto" (click)="openUpdate(content, info)" tooltipPosition="bottom" icon="pi pi-pencil" iconPos="left" pButton type="button" class="p-button-rounded p-button-success"></button>
+        <button style="margin-right: .5rem" pTooltip="Eliminar Producto" (click)="deleteProd(info.id_prod)" tooltipPosition="bottom" icon="pi pi-trash" iconPos="left" pButton type="button" class="p-button-rounded p-button-danger"></button>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage" let-columns>
+      <tr>
+        <td [attr.colspan]="columns.length">
+        <h4>No hay datos</h4>
+        </td>
+      </tr>
+  </ng-template>
+</p-table>
+
+<ng-template #content let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">{{ titleModal }}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="container overflow-hidden text-center">
+      <div class="row gy-5">
+        <div class="col-6">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-shopping-cart"></i></span>
+            <input type="text" pInputText [(ngModel)]="nombreProd" placeholder="Nombre">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon">L.</span>
+            <p-inputNumber mode="decimal" [minFractionDigits]="2" locale="en-US" [(ngModel)]="precioProd" placeholder="Costo"></p-inputNumber>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon">L.</span>
+            <p-inputNumber mode="decimal" [minFractionDigits]="2" locale="en-US" [(ngModel)]="gancProd" placeholder="Utilidad"></p-inputNumber>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-plus-circle"></i></span>
+            <p-inputNumber [showButtons]="true" [min]="0" [max]="1000" [(ngModel)]="cantProd" placeholder="Cantidad"></p-inputNumber>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-info"></i></span>
+            <p-dropdown [options]="listImp" [(ngModel)]="imp" placeholder="Seleccione Impuesto" [showTransitionOptions]="'225ms'" [hideTransitionOptions]="'198ms'"></p-dropdown>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon"><i class="pi pi-image"></i></span>
+            <p-fileUpload #fileUpload name="img[]" customUpload="true" (uploadHandler)="myUploader($event, fileUpload)" fileLimit="50"
+              accept="image/jpeg, image/png, image/jpg" maxFileSize="1000000" chooseLabel="Seleccione imagen" [showUploadButton]="false"
+              chooseIcon="pi pi-image" cancelIcon="pi pi-times-circle" invalidFileSizeMessageSummary="Error!" invalidFileSizeMessageDetail="Imagen muy grande. Max 976.563 KB"
+              invalidFileLimitMessageSummary="Error!" invalidFileLimitMessageDetail="Limite de imagenes excedido (1 Max)" [auto]="true"
+              invalidFileTypeMessageSummary="Error!" invalidFileTypeMessageDetail="Tipo de imagen invalido.">
+              <ng-template pTemplate="content">
+                <ul *ngIf="uploadedFiles.length">
+                  <li *ngFor="let img of uploadedFiles">{{img.name}} - {{img.size}} bytes</li>
+                </ul>
+              </ng-template>
+            </p-fileUpload>
+          </div>
+        </div>
+        <div *ngIf="gallery" class="col-6">
+          <p-card header="Imagen actual" [style]="{'width': '250px', 'margin-left': '40px'}">
+            <p-galleria [(value)]="images" [numVisible]="1" [showThumbnails]="false">
+              <ng-template pTemplate="item" let-item>
+                <img *ngIf="item.img_prod" [src]="getSafeUrl(item.img_prod)" class="roundImg"/>
+                <img *ngIf="item.img_prod==''" [src]='iconoNoImg' class="roundImg"/>
+              </ng-template>
+            </p-galleria>
+          </p-card>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button *ngIf="op=='Add'" type="button" class="btn btn-outline-primary" (click)="agregarProd()">{{ textBottom }}</button>
+    <button *ngIf="op=='Edit'" type="button" class="btn btn-outline-success" (click)="editarProd()">{{ textBottom }}</button>
+    <button type="button" class="btn btn-outline-info" (click)="clean()">{{ btnClean }}</button>
+    <button type="button" class="btn btn-outline-dark" (click)="c('Close click')">{{ lbBtnModal }}</button>
+  </div>
+</ng-template>
+
+<ng-template #contentImg let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Imagen Producto</h4>
+    <button type="button" class="close" aria-label="Close" (click)="d('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p-card [style]="{'max-width': '250px', 'max-height': '200px'}">
+      <p-galleria [(value)]="imgProducto" [numVisible]="1" [showThumbnails]="false">
+        <ng-template pTemplate="item" let-item>
+          <img [src]="getSafeUrl(item.img_prod)" class="product-image"/>
+        </ng-template>
+      </p-galleria>
+    </p-card>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-dark" (click)="c('Close click')">Cerrar</button>
+  </div>
+</ng-template>

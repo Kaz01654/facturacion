@@ -1,0 +1,6 @@
+#contenedor {
+  height: 400px;
+  min-width: 300px;
+  max-width: 1200px;
+  margin: 0 auto;
+}

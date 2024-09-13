@@ -1,0 +1,76 @@
+// Color
+$brown: #2b2520;
+$green: #39dbc2;
+$pink: #f41fbf;
+$yellow: #ffed28;
+$purple: #b028ff;
+$blue: #49A7FF;
+$red: #ff3838;
+$orange: #db7953;
+
+// Size
+$extra-large: 30px;
+$large: 25px;
+
+@mixin center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.double-border-text {
+  $random-text: 'IPF';
+  position: relative;
+  $stroke-width: $large * 0.2;
+  font-family: 'Pacifico', cursive;
+  text-transform: uppercase;
+  font-size: $extra-large;
+  color: white;
+  -webkit-text-stroke-width: $stroke-width;
+  -webkit-text-stroke-color: lighten(adjust-hue($yellow, calc(-5% / 1%)), 35%);
+
+  &:after {
+    content: $random-text;
+    position: absolute;
+    top: 0;
+    left: 0;
+    -webkit-text-stroke-width: 0;
+    color: $red;
+  }
+
+  &:before {
+    z-index: -1;
+    content: $random-text;
+    position: absolute;
+    top: 0;
+    left: 0;
+    -webkit-text-stroke-width: $stroke-width + 15px;
+    -webkit-text-stroke-color: $blue;
+  }
+}
+
+.neon-text {
+  $random-text: 'IPF';
+  position: relative;
+  $stroke-width: $extra-large * 0.05;
+  font-family: 'Pacifico', cursive;
+  text-transform: uppercase;
+  font-size: $extra-large;
+  color: lighten($pink, 25%);
+  -webkit-text-stroke-width: $stroke-width;
+  -webkit-text-stroke-color: lighten($pink, 5%);
+  @include center;
+  text-shadow: 0 0 40px lighten($pink, 5%),
+                0 0 40px lighten($pink, 5%),
+                0 0 40px lighten($pink, 5%);
+  &:after {
+    content: $random-text;
+    z-index: -1;
+    position: absolute;
+    color: transparent;
+    -webkit-text-stroke-width: $stroke-width;
+    -webkit-text-stroke-color: darken($pink, 40%);
+    top: -5%;
+    left: -0.5%;
+  }
+}

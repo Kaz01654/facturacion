@@ -1,0 +1,65 @@
+.slide-in {
+  animation: slide-in 1s;
+}
+
+@keyframes slide-in {
+  0% { transform: translateX(-100%);}
+  100% { transform: translateX(0%);}
+}
+
+img.roundImg {
+  border-radius: 25px;
+  border: 2px solid #73AD21;
+  padding: 10px;
+  width: 70px;
+  height: 70px;
+}
+
+.outofstockzero {
+  font-weight: 700;
+  color: #FF5252;
+  text-decoration: line-through;
+}
+
+.outofstock {
+  font-weight: 700;
+  color: #FF5252;
+}
+
+.lowstock {
+  font-weight: 700;
+  color: #FFA726;
+}
+
+.instock {
+  font-weight: 700;
+  color: #66BB6A;
+}
+
+:host ::ng-deep .row-accessories {
+  background-color: rgba(0,0,0,.15) !important;
+}
+
+@media screen and (max-width: 40em) {
+  .mydialog {
+      width: 75vw;
+  }
+}
+
+.dark-modal .modal-content {
+  background-color: #292b2c;
+  color: white;
+}
+
+.dark-modal .close {
+  color: white;
+}
+
+.light-blue-backdrop {
+  background-color: #5cb3fd;
+}
+
+.product-image {
+  width: 50%;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23)
+}

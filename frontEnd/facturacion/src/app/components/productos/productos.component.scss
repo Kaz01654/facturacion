@@ -1,0 +1,50 @@
+
+$color_1: #FF5252;
+$color_2: #FFA726;
+$color_3: #66BB6A;
+$color_4: white;
+$background-color_1: rgba(0,0,0,.15);
+$background-color_2: #292b2c;
+$background-color_3: #5cb3fd;
+
+::ng-deep.swal2-container {
+  z-index: 20000 !important
+}
+
+.margen {
+  margin-left: 5px;
+}
+
+.margen2 {
+  margin-right: .5rem;
+}
+
+.outofstockzero {
+	font-weight: 700;
+	color: $color_1;
+	text-decoration: line-through;
+}
+
+.outofstock {
+	font-weight: 700;
+	color: $color_1;
+}
+
+.lowstock {
+	font-weight: 700;
+	color: $color_2;
+}
+
+.instock {
+	font-weight: 700;
+	color: $color_3;
+}
+
+.light-blue-backdrop {
+	background-color: $background-color_3;
+}
+
+.product-image {
+	width: 50%;
+	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
