@@ -15,8 +15,9 @@ import { TableModule, TableRowCollapseEvent, TableRowExpandEvent } from 'primeng
 import { TooltipModule } from 'primeng/tooltip'
 import { ButtonModule } from 'primeng/button'
 import { ToggleButtonChangeEvent, ToggleButtonModule } from 'primeng/togglebutton'
-import swal from 'sweetalert2'
 import { ProductosService } from '../../services/productos.service'
+import { CalendarModule } from 'primeng/calendar'
+import swal from 'sweetalert2'
 
 const swalAnimate = swal.mixin({
   showClass: {
@@ -46,6 +47,7 @@ const swalAnimate = swal.mixin({
     FormsModule,
     TooltipModule,
     DialogModule,
+    CalendarModule,
     InputTextModule,
     InputNumberModule,
     NgxSpinnerModule,
@@ -62,14 +64,15 @@ export class FacturacionComponent {
   listProd: SelectItem[] | undefined
   prod = null
   filas: number = 0
-  columnas: any[] = []
   filasItems: number = 0
+  total_ing: number = 0
   columnasItems: any[] = []
   itemsArr: any[] = []
   info: any[] = []
   infoClientes: any[] = []
   infoProd: any[] = []
   loading: boolean = false
+  fecha_datos : Date | undefined
   titleModal: string = 'Nueva Factura'
   textBottom: string = 'Procesar'
   lbBtnModal: string = 'Cancelar'
@@ -112,18 +115,12 @@ export class FacturacionComponent {
       monthNames: [ 'Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
       monthNamesShort: [ 'Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
       today: 'Hoy',
-      clear: 'Borrar'
+      clear: 'Todos las facturas'
     })
 
     // ✅ Iniciamos las variables para la tabla
+    this.filas = 10
     this.filasItems = 10
-    this.columnasItems = [
-      { field: 'nombre_item', header: 'Item' },
-      { field: 'cant_item', header: 'Cantidad' },
-      { field: 'precio_item', header: 'Precio' },
-      { field: 'total_item', header: 'Total' },
-      { field: '', header: 'Acciones' }
-    ]
   }
 
   async ngOnInit(): Promise<void> {
@@ -136,11 +133,11 @@ export class FacturacionComponent {
   }
 
   onRowExpand(event: TableRowExpandEvent) {
-    // this.messageService.add({ severity: 'info', summary: 'Product Expanded', detail: event.data.name, life: 3000 });
+    // console.log(event)
   }
 
   onRowCollapse(event: TableRowCollapseEvent) {
-      // this.messageService.add({ severity: 'success', summary: 'Product Collapsed', detail: event.data.name, life: 3000 });
+    // console.log(event)
   }
 
   open() {
@@ -151,17 +148,17 @@ export class FacturacionComponent {
     this.showDialog()
   }
 
-  openUpdate(factura: any) {
-    this.titleModal = 'Editar Factura'
-    this.textBottom = 'Editar'
-    this.op = 'Edit'
-    this.id_fact = factura.id_fact
-    this.cliente_fact = factura.cliente_fact
-    this.total_fact = factura.total_fact
-    this.items_fact = factura.items_fact
-    this.fecha_fact = factura.fecha_fact
-    this.showDialog()
-  }
+  // openUpdate(factura: any) {
+  //   this.titleModal = 'Editar Factura'
+  //   this.textBottom = 'Editar'
+  //   this.op = 'Edit'
+  //   this.id_fact = factura.id_fact
+  //   this.cliente_fact = factura.cliente_fact
+  //   this.total_fact = factura.total_fact
+  //   this.items_fact = factura.items_fact
+  //   this.fecha_fact = factura.fecha_fact
+  //   this.showDialog()
+  // }
 
   handleOnChange(e: DropdownChangeEvent) {
     if (e.value) {
@@ -256,16 +253,21 @@ export class FacturacionComponent {
             return accum
           }
         }, 0)
-        let res = Number(obj.cant_prod) - Number(e.value) - Number(cant)
 
-        if (res >= 0) {
-          this.listProd![pos].label = item.nombre_item + ' - ' + res.toString()
-          this.sumaSubTotal()
+        if (obj) {
+          let res = Number(obj.cant_prod) - Number(e.value) - Number(cant)
+
+          if (res >= 0) {
+            this.listProd![pos].label = item.nombre_item + ' - ' + res.toString()
+            this.sumaSubTotal()
+          } else {
+            this.itemsArr[indexOf].cant_item -= 1
+            this.itemsArr[indexOf].total_item = this.itemsArr[indexOf].precio_item * this.itemsArr[indexOf].cant_item
+            this.sumaSubTotal()
+            swalAnimate.fire('Cuidado!',  `Estas sobrepasando la cantidad de ${obj.nombre_prod} que hay en existencia!`, 'warning')
+          }
         } else {
-          this.itemsArr[indexOf].cant_item -= 1
-          this.itemsArr[indexOf].total_item = this.itemsArr[indexOf].precio_item * this.itemsArr[indexOf].cant_item
           this.sumaSubTotal()
-          swalAnimate.fire('Cuidado!',  `Estas sobrepasando la cantidad de ${obj.nombre_prod} que hay en existencia!`, 'warning')
         }
       }
     }
@@ -282,9 +284,10 @@ export class FacturacionComponent {
   }
 
   async sumaSubTotal() {
-    this.sub_total_fact = await this.itemsArr.reduce((accum, item) => accum + item.total_item, 0)
-    this.tax_fact = Number(this.sub_total_fact) * 0.30
-    this.total_fact = Number(this.sub_total_fact) + Number(this.tax_fact)
+    let total = await this.itemsArr.reduce((accum, item) => accum + item.total_item, 0)
+    this.tax_fact = total * 0.15
+    this.sub_total_fact = total - this.tax_fact
+    this.total_fact = total
   }
 
   clearItems() {
@@ -305,13 +308,24 @@ export class FacturacionComponent {
     this.prod = this.listProd![0].value
   }
 
-  async poblarTabla() {
+  async poblarTabla(fecha: any = undefined) {
+    this.fecha_datos = fecha
     this.load(true)
-    this.apiFactura.getFacturas().subscribe(async (data: any) => {
-      this.info = data
-    }, (err: HttpErrorResponse) => {
-      swalAnimate.fire('Error!', `${ err.message }`, 'error')
-    }, () => this.load(false))
+    if (fecha == undefined || fecha == '') {
+      this.apiFactura.getFacturas().subscribe(async (data: any) => {
+        this.total_ing = data.reduce((accum: any, factura: any) => accum + factura.total_fact, 0)
+        this.info = data
+      }, (err: HttpErrorResponse) => {
+        swalAnimate.fire('Error!', `${ err.message }`, 'error')
+      }, () => this.load(false))
+    } else {
+      this.apiFactura.getFacturasByDate(this.formatearFecha(fecha).fecha).subscribe(async (data: any) => {
+        this.total_ing = data.reduce((accum: any, factura: any) => accum + factura.total_fact, 0)
+        this.info = data
+      }, (err: HttpErrorResponse) => {
+        swalAnimate.fire('Error!', `${ err.message }`, 'error')
+      }, () => this.load(false))
+    }
   }
 
   async listarClientes() {
@@ -343,7 +357,7 @@ export class FacturacionComponent {
   }
 
   async agregarFact() {
-    if (this.cliente_fact == '' || this.total_fact == null || this.items_fact == '') {
+    if ((this.cliente_fact == '' && this.client == null) || this.itemsArr.length == 0) {
       swalAnimate.fire({
         position: 'bottom-end',
         icon: 'warning',
@@ -353,72 +367,127 @@ export class FacturacionComponent {
         toast: true
       })
     } else {
-      let object = {
-        cliente_fact: this.cliente_fact,
-        total_fact: this.total_fact,
-        items_fact: this.items_fact
-      }
-
-      this.load(true)
-      this.apiFactura.insertFactura(object).subscribe((data: any) => {
-        if (data['status']) {
-          swalAnimate.fire({
-            position: 'top-end',
-            icon: 'success',
-            title: data['mgs'],
-            showConfirmButton: false,
-            timer: 2000
-          }).then(async () => {
-            await this.poblarTabla()
-            this.clean()
-          })
-        } else {
-          swalAnimate.fire('Cuidado!', data['mgs'], 'warning')
-        }
-      }, (err: HttpErrorResponse) => {
-        swalAnimate.fire('Error!', `${ err.message }`, 'error')
-      }, () => (this.load(false), this.closeDialog()))
-    }
-  }
-
-  async editarFact() {
-    if (this.id_fact == 0 || this.cliente_fact == '' || this.items_fact == null) {
       swalAnimate.fire({
-        position: 'bottom-end',
-        icon: 'warning',
-        title: 'Debe llenar los campos obligatorios(Cliente, Items)!',
-        showConfirmButton: false,
-        timer: 2000,
-        toast: true
-      })
-    } else {
-      let object = {
-        cliente_fact: this.cliente_fact,
-        total_fact: this.total_fact,
-        items_fact: this.items_fact
-      }
-
-      this.load(true)
-      this.apiFactura.updateFactura(this.id_fact, object).subscribe((data: any) => {
-        if (data['status']) {
+        title: `Factura`,
+        input: 'number',
+        inputLabel: 'Ingrese cantidad con la que paga la factura.',
+        inputAttributes: {
+          autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        cancelButtonText: '<i class="fa fa-ban" aria-hidden="true"></i> Cancelar',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '<i class="fa fa-check" aria-hidden="true"></i> Pagar',
+        confirmButtonColor: '#22C55E',
+        showLoaderOnConfirm: true,
+        inputPlaceholder: 'L. 00.00',
+        width: '35em',
+        preConfirm: (pago) => {
+          if(!pago) {
+            swalAnimate.showValidationMessage(`Debe llenar el campo.`)
+          } else {
+            if (Number(this.total_fact!) <= Number(pago)) {
+              return pago
+            } else {
+              swalAnimate.showValidationMessage(`El monto ${pago} es menor que el total a pagar.`)
+            }
+          }
+        },
+        allowOutsideClick: () => !swalAnimate.isLoading()
+      }).then(async (result) => {
+        if (result.isConfirmed) {
           swalAnimate.fire({
-            position: 'top-end',
-            icon: 'success',
-            title: data['mgs'],
-            showConfirmButton: false,
-            timer: 2000
-          }).then(async () => {
-            await this.poblarTabla()
-            this.clean()
+            title: "Factura Procesada",
+            text: `Cambio a entregar L.${Number(result.value) - this.total_fact!}`,
+            icon: "success"
+          }).then((res) => {
+            let objClient = this.infoClientes[this.infoClientes.findIndex(x => x.id == this.client)]
+            let obj = {
+              cliente_fact: {
+                id: this.client || 0,
+                cliente: this.cliente_fact || objClient.nombre,
+                correo: this.correoClient,
+                contacto: this.contactoClient,
+                direccion: this.direccionClient,
+                rtn: this.rtnClient
+              },
+              items_fact: this.itemsArr.map((val: any, i: number) => {
+                return {
+                  nombre: val.nombre_item,
+                  cant: val.cant_item,
+                  precio_u: val.precio_item,
+                  total: val.total_item
+                }
+              }),
+              total_fact: this.total_fact
+            }
+
+            this.load(true)
+            this.apiFactura.insertFactura(obj).subscribe((data: any) => {
+              if (data['status']) {
+                swalAnimate.fire({
+                  position: 'top-end',
+                  icon: 'success',
+                  title: data['mgs'],
+                  showConfirmButton: false,
+                  timer: 2000
+                }).then(async () => {
+                  this.clearItems()
+                  await this.poblarTabla(this.fecha_datos)
+                  await this.listarClientes()
+                  await this.getProd()
+                  this.clean()
+                })
+              } else {
+                swalAnimate.fire('Cuidado!', data['mgs'], 'warning')
+              }
+            }, (err: HttpErrorResponse) => {
+              swalAnimate.fire('Error!', `${ err.message }`, 'error')
+            }, () => (this.load(false), this.closeDialog()))
           })
-        } else {
-          swalAnimate.fire('Cuidado!', data['mgs'], 'warning')
         }
-      }, (err: HttpErrorResponse) => {
-        swalAnimate.fire('Error!', `${ err.message }`, 'error')
-      }, () => (this.load(false), this.closeDialog()))
+      })
     }
   }
+
+  // async editarFact() {
+  //   if (this.id_fact == 0 || this.cliente_fact == '' || this.items_fact == null) {
+  //     swalAnimate.fire({
+  //       position: 'bottom-end',
+  //       icon: 'warning',
+  //       title: 'Debe llenar los campos obligatorios(Cliente, Items)!',
+  //       showConfirmButton: false,
+  //       timer: 2000,
+  //       toast: true
+  //     })
+  //   } else {
+  //     let object = {
+  //       cliente_fact: this.cliente_fact,
+  //       total_fact: this.total_fact,
+  //       items_fact: this.items_fact
+  //     }
+
+  //     this.load(true)
+  //     this.apiFactura.updateFactura(this.id_fact, object).subscribe((data: any) => {
+  //       if (data['status']) {
+  //         swalAnimate.fire({
+  //           position: 'top-end',
+  //           icon: 'success',
+  //           title: data['mgs'],
+  //           showConfirmButton: false,
+  //           timer: 2000
+  //         }).then(async () => {
+  //           await this.poblarTabla(this.fecha_datos)
+  //           this.clean()
+  //         })
+  //       } else {
+  //         swalAnimate.fire('Cuidado!', data['mgs'], 'warning')
+  //       }
+  //     }, (err: HttpErrorResponse) => {
+  //       swalAnimate.fire('Error!', `${ err.message }`, 'error')
+  //     }, () => (this.load(false), this.closeDialog()))
+  //   }
+  // }
 
   async deleteFact(id: any) {
     swalAnimate.fire({
@@ -442,11 +511,12 @@ export class FacturacionComponent {
               showConfirmButton: false,
               timer: 2000
             }).then(async () => {
-              await this.poblarTabla()
+              await this.poblarTabla(this.fecha_datos)
+              await this.getProd()
+              this.clean()
             })
           } else {
             swalAnimate.fire('Cuidado!', data['mgs'], 'warning')
-            this.poblarTabla()
           }
         }, (err: HttpErrorResponse) => {
           swalAnimate.fire('Error!', `${ err.message }`, 'error')
@@ -468,6 +538,7 @@ export class FacturacionComponent {
     this.saldo_fact = 0
     this.items_fact = ''
     this.client = this.listClient![0].value
+    this.prod = this.listProd![0].value
     this.fecha_fact = undefined
   }
 

@@ -22,6 +22,13 @@ export class FacturacionService {
     )
   }
 
+  // ✅ Obtiene las facturas por fecha
+  getFacturasByDate(fecha: string): Observable<any[]> {
+    return this.http.get(`${ env.urlAPIFact }getFacturasByDate/${fecha}`).pipe(
+      map((response: any)=> response)
+    )
+  }
+
   // ✅ Agrega un factura
   insertFactura(object: any) {
     const headers = new HttpHeaders().set('Content-Type', 'application/json')

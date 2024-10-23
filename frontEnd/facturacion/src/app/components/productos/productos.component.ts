@@ -5,11 +5,11 @@ import { ImpuestoService } from '../../services/impuesto.service'
 import { ProductosService } from '../../services/productos.service'
 import { CardModule } from 'primeng/card'
 import { CommonModule } from '@angular/common'
-import { DropdownModule } from 'primeng/dropdown'
+import { DropdownChangeEvent, DropdownModule } from 'primeng/dropdown'
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner'
 import { ButtonModule } from 'primeng/button'
 import { TableModule } from 'primeng/table'
-import { InputNumberModule } from 'primeng/inputnumber'
+import { InputNumberInputEvent, InputNumberModule } from 'primeng/inputnumber'
 import { FormsModule } from '@angular/forms'
 import { InputTextareaModule } from 'primeng/inputtextarea'
 import { InputTextModule } from 'primeng/inputtext'
@@ -65,6 +65,7 @@ export class ProductosComponent {
   filas: number = 0
   columnas: any[] = []
   info: any[] = []
+  infoImp: any[] = []
   loading: boolean = false
   titleModal: string = 'Agregar Producto'
   textBottom: string = 'Agregar'
@@ -73,6 +74,7 @@ export class ProductosComponent {
   op: string = 'Add'
   href: string = ''
   visible: boolean = false
+  gancProdDis: boolean = true
 
   // ✅Icono para sin imagen
   iconoNoImg = `${ window.location.href }assets/img/no-image-icon.png`
@@ -140,6 +142,20 @@ export class ProductosComponent {
     this.showDialog()
   }
 
+  handleOnChange(e: DropdownChangeEvent) {
+    if (e.value && this.precioProd) {
+      let pos = this.infoImp![this.infoImp!.findIndex(x => x.id == e.value)]
+      this.gancProd = this.precioProd! * (pos.impuesto)
+    }
+  }
+
+  handleOnChangeInput(e: InputNumberInputEvent) {
+    if (e.value && this.imp) {
+      let pos = this.infoImp![this.infoImp!.findIndex(x => x.id == this.imp)]
+      this.gancProd = Number(e.value) * (pos.impuesto)
+    }
+  }
+
   async listarImp() {
     this.load(true)
     this.listImp = [{'value': null, 'label': 'Seleccione Impuesto'}]
@@ -148,6 +164,7 @@ export class ProductosComponent {
         this.listImp!.push({'value': data[i].id, 'label': data[i].descripcion + ' - %' + (data[i].impuesto*100).toString()})
       }
 
+      this.infoImp = data
       this.imp = this.listImp![0].value
     }, (err: HttpErrorResponse) => {
       swalAnimate.fire('Error!', `${ err.message }`, 'error')

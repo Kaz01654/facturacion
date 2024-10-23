@@ -126,8 +126,14 @@ export class GraficasComponent {
       this.load(true)
       this.api.getGastosByYear(year).subscribe(async (data: any) => {
         await this.fillSeries()
+        let ing = await this.api.getIngresosByYear(year).toPromise()
+
+        ing!.forEach((fact: any) => {
+          this.data_series[0]['data'][fact.mes - 1] = Number((fact.ingresos) ? fact.ingresos : 0)
+        })
+
         data.forEach((op: any) => {
-          this.data_series[0]['data'][op.mes - 1] = (op.ingresos) ? op.ingresos : 0
+          // this.data_series[0]['data'][op.mes - 1] = (op.ingresos) ? op.ingresos : 0
           this.data_series[1]['data'][op.mes - 1] = (op.gastos) ? op.gastos : 0
         })
 

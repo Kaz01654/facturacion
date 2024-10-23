@@ -20,13 +20,13 @@
           <i class="pi pi-search"></i>
           <input style="width: auto!important;" type="text" pInputText size="20" placeholder="Búsqueda..." (input)="dt.filterGlobal($any($event.target).value, 'contains')" >
         </span>
-        <div style="margin-left: auto">
-          <p-calendar [(ngModel)]="fecha_datos" (onSelect)="poblarTabla($event)" (onClearClick)="poblarTabla($event.target.value)" dateFormat="yy-mm-dd" [showIcon]="true" [showButtonBar]="true" [monthNavigator]="true" [yearNavigator]="true" yearRange="2000:2050" [readonlyInput]="true" [style]="{'margin-left': '5px', 'width': '15%'}" placeholder="Todos los registros" [showTransitionOptions]="'0ms'" [hideTransitionOptions]="'0ms'" appendTo="body"></p-calendar>
-          <p-dropdown [options]="listProd" [(ngModel)]="prod" (onChange)="agregarProd($event.value)" [filter]="true" [showClear]="true" filterBy="label" [style]="{'margin-left': '5px'}" placeholder="Seleccione Producto" appendTo="body"></p-dropdown>
+        <div>
+          <p-calendar class="margen" [(ngModel)]="fecha_datos" (onSelect)="poblarTabla($event)" (onClearClick)="poblarTabla($event.target.value)" dateFormat="yy-mm-dd" [showIcon]="true" [showButtonBar]="true" [monthNavigator]="true" [yearNavigator]="true" yearRange="2000:2050" [readonlyInput]="true" placeholder="Todos los registros" [showTransitionOptions]="'0ms'" [hideTransitionOptions]="'0ms'" appendTo="body"></p-calendar>
+          <!-- <p-dropdown [options]="listProd" [(ngModel)]="prod" (onChange)="agregarProd($event.value)" [filter]="true" [showClear]="true" filterBy="label" [style]="{'margin-left': '5px'}" placeholder="Seleccione Producto" appendTo="body"></p-dropdown>
           <p-button icon="pi pi-external-link" iconPos="left" (onClick)="open('Variado')" class="margen" label="Variado" pTooltip="Agregar Variado" tooltipPosition="bottom" [disabled]="loading" severity="success"></p-button>
           <p-button icon="pi pi-print" iconPos="left" (onClick)="openCopy()" class="margen" label="Copia" pTooltip="Agregar Copia" tooltipPosition="bottom" [disabled]="loading" severity="success"></p-button>
           <p-button icon="pi pi-print" iconPos="left" (onClick)="openPlotter()" class="margen" label="Plotter" pTooltip="Agregar Plotter" tooltipPosition="bottom" [disabled]="loading" severity="success"></p-button>
-          <p-button icon="pi pi-wallet" iconPos="left" (onClick)="open('Compra')" class="margen" label="Compras" pTooltip="Agregar Compra" tooltipPosition="bottom" [disabled]="loading" severity="danger"></p-button>
+          <p-button icon="pi pi-wallet" iconPos="left" (onClick)="open('Compra')" class="margen" label="Compras" pTooltip="Agregar Compra" tooltipPosition="bottom" [disabled]="loading" severity="danger"></p-button> -->
           <p-button icon="pi pi-money-bill" iconPos="left" (onClick)="open('Gasto')" class="margen" label="Gastos" pTooltip="Agregar Gasto" tooltipPosition="bottom" [disabled]="loading" severity="danger"></p-button>
           <p-button *ngIf="info" icon="pi pi-file" (onClick)="descargarCSV(info, 'Informe')" class="margen" pTooltip="Descargar CSV" tooltipPosition="bottom" [disabled]="loading" severity="secondary"></p-button>
           <p-button *ngIf="info" icon="pi pi-file-excel" (onClick)="descargarExcel()" class="margen" pTooltip="Descargar Excel" tooltipPosition="bottom" [disabled]="loading" severity="success"></p-button>
@@ -73,7 +73,7 @@
     </ng-template>
     <ng-template pTemplate="summary">
       <div class="grid">
-        <div class="col-12 lg:col-6 xl:col-3">
+        <!-- <div class="col-12 lg:col-6 xl:col-3">
           <div class="card mb-0">
               <div class="flex justify-content-between mb-3">
                   <div>
@@ -84,8 +84,8 @@
                       <i class="pi pi-warehouse text-blue-500 text-xl"></i>
                   </div>
               </div>
-              <!-- <span class="text-green-500 font-medium">24 new </span>
-              <span class="text-500">since last visit</span> -->
+              <span class="text-green-500 font-medium">24 new </span>
+              <span class="text-500">since last visit</span>
           </div>
         </div>
         <div class="col-12 lg:col-6 xl:col-3">
@@ -99,8 +99,8 @@
                         <i class="pi pi-shopping-bag text-green-500 text-xl"></i>
                     </div>
                 </div>
-                <!-- <span class="text-green-500 font-medium">%52+ </span>
-                <span class="text-500">since last week</span> -->
+                <span class="text-green-500 font-medium">%52+ </span>
+                <span class="text-500">since last week</span>
             </div>
         </div>
         <div class="col-12 lg:col-6 xl:col-3">
@@ -114,8 +114,8 @@
                         <i class="pi pi-print text-cyan-500 text-xl"></i>
                     </div>
                 </div>
-                <!-- <span class="text-green-500 font-medium">520  </span>
-                <span class="text-500">newly registered</span> -->
+                <span class="text-green-500 font-medium">520  </span>
+                <span class="text-500">newly registered</span>
             </div>
         </div>
         <div class="col-12 lg:col-6 xl:col-3">
@@ -129,19 +129,20 @@
                         <i class="pi pi-print text-purple-500 text-xl"></i>
                     </div>
                 </div>
-                <!-- <span class="text-green-500 font-medium">85 </span>
-                <span class="text-500">responded</span> -->
+                <span class="text-green-500 font-medium">85 </span>
+                <span class="text-500">responded</span>
             </div>
-        </div>
+        </div> -->
         <div class="col-12 lg:col-6 xl:col-3">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
-                        <span class="block text-500 font-medium mb-3">Compras</span>
-                        <div class="text-900 font-medium text-xl">L. {{ total_comp | number: '1.2-2' }}</div>
+                        <span class="block text-500 font-medium mb-3">Facturación</span>
+                        <!-- <div class="text-900 font-medium text-xl">L. {{ total_comp | number: '1.2-2' }}</div> -->
+                        <div class="text-900 font-medium text-xl">L. {{ total_facts | number: '1.2-2' }}</div>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-red-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
-                        <i class="pi pi-wallet text-red-500 text-xl"></i>
+                    <div class="flex align-items-center justify-content-center bg-green-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                        <i class="pi pi-wallet text-green-500 text-xl"></i>
                     </div>
                 </div>
                 <!-- <span class="text-green-500 font-medium">85 </span>
@@ -155,8 +156,8 @@
                         <span class="block text-500 font-medium mb-3">Gastos</span>
                         <div class="text-900 font-medium text-xl">L. {{ total_gast | number: '1.2-2' }}</div>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-orange-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
-                        <i class="pi pi-money-bill text-orange-500 text-xl"></i>
+                    <div class="flex align-items-center justify-content-center bg-red-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                        <i class="pi pi-money-bill text-red-500 text-xl"></i>
                     </div>
                 </div>
                 <!-- <span class="text-green-500 font-medium">85 </span>
@@ -166,17 +167,29 @@
         <div class="col-12 lg:col-6 xl:col-6">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
-                    <div>
+                    <!-- <div>
                         <span class="block text-500 font-medium mb-3">Total Ingresos</span>
                         <div class="font-medium text-xl" [ngClass]="'ingreso'">L. {{ total_ing | number: '1.2-2' }}</div>
+                    </div> -->
+                    <!-- <div>
+                        <span class="block text-500 font-medium mb-3">Total Ingresos</span>
+                        <div class="font-medium text-xl" [ngClass]="'ingreso'">L. {{ total_ing | number: '1.2-2' }}</div>
+                    </div> -->
+                    <div>
+                        <span class="block text-500 font-medium mb-3">Total Ingresos</span>
+                        <div class="font-medium text-xl" [ngClass]="'ingreso'">L. {{ total_facts | number: '1.2-2' }}</div>
                     </div>
                     <div>
                         <span class="block text-500 font-medium mb-3">Total Gastos</span>
                         <div class="font-medium text-xl" [ngClass]="'gasto'">L. {{ total_gastos | number: '1.2-2' }}</div>
                     </div>
-                    <div>
+                    <!-- <div>
                         <span class="block text-500 font-medium mb-3">Ganancia o Pérdida</span>
                         <div class="font-medium text-xl" [ngClass]="{'gasto': total_ing < total_gastos, 'ingreso': total_ing > total_gastos, 'neutral': total_ing == total_gastos}">L. {{ total_resultado | number: '1.2-2' }}</div>
+                    </div> -->
+                    <div>
+                        <span class="block text-500 font-medium mb-3">Ganancia o Pérdida</span>
+                        <div class="font-medium text-xl" [ngClass]="{'gasto': total_facts < total_gastos, 'ingreso': total_facts > total_gastos, 'neutral': total_facts == total_gastos}">L. {{ total_facts - total_gastos | number: '1.2-2' }}</div>
                     </div>
                     <div class="flex align-items-center justify-content-center bg-yellow-100 border-round" [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
                         <i class="pi pi-calculator text-yellow-500 text-xl"></i>

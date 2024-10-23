@@ -21,7 +21,14 @@ export class GraficasService {
     )
   }
 
-  // ✅ Obtiene los años
+  // ✅ Obtiene los ingresos por años
+  getIngresosByYear(year: any): Observable<any[]> {
+    return this.http.get(`${ env.urlAPIGraf }getIngresosByYear/${year}`).pipe(
+      map((response: any)=> response)
+    )
+  }
+
+  // ✅ Obtiene los gastos por años
   getGastosByYear(year: any): Observable<any[]> {
     return this.http.get(`${ env.urlAPIGraf }getGastosByYear/${year}`).pipe(
       map((response: any)=> response)

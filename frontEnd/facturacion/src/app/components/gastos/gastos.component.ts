@@ -17,6 +17,7 @@ import { InputNumberModule } from 'primeng/inputnumber'
 import { DropdownModule } from 'primeng/dropdown'
 import swal from 'sweetalert2'
 import * as XLSX from 'xlsx'
+import { FacturacionService } from '../../services/facturacion.service'
 
 const swalAnimate = swal.mixin({
   showClass: {
@@ -78,6 +79,7 @@ export class GastosComponent {
   total_comp: number = 0
   total_gast: number = 0
   total_ing: number = 0
+  total_facts: number = 0
   total_gastos: number = 0
   total_resultado: number = 0
   tipo_global: number = 0
@@ -98,6 +100,7 @@ export class GastosComponent {
   constructor(
     private api: GastosService,
     private apiProd: ProductosService,
+    private apiFactura: FacturacionService,
     private spinner: NgxSpinnerService,
     private primengConfig: PrimeNGConfig
   ) {
@@ -182,6 +185,7 @@ export class GastosComponent {
   async poblarTabla(fecha: any = undefined) {
     this.fecha_datos = fecha
     this.load(true)
+    this.getTotalFacturas(fecha)
     if (fecha == undefined || fecha == '') {
       this.api.getGastos().subscribe(async (data: any) => {
         this.info = await data
@@ -193,6 +197,23 @@ export class GastosComponent {
       this.api.getGastosByDate(this.formatearFecha(fecha).fecha).subscribe(async (data: any) => {
         this.info = await data
         this.calculos(this.info)
+      }, (err: HttpErrorResponse) => {
+        swalAnimate.fire('Error!', `${ err.message }`, 'error')
+      }, () => this.load(false))
+    }
+  }
+
+  async getTotalFacturas(fecha: any = undefined) {
+    this.load(true)
+    if (fecha == undefined || fecha == '') {
+      this.apiFactura.getFacturas().subscribe(async (data: any) => {
+        this.total_facts = data.reduce((accum: any, factura: any) => accum + factura.total_fact, 0)
+      }, (err: HttpErrorResponse) => {
+        swalAnimate.fire('Error!', `${ err.message }`, 'error')
+      }, () => this.load(false))
+    } else {
+      this.apiFactura.getFacturasByDate(this.formatearFecha(fecha).fecha).subscribe(async (data: any) => {
+        this.total_facts = data.reduce((accum: any, factura: any) => accum + factura.total_fact, 0)
       }, (err: HttpErrorResponse) => {
         swalAnimate.fire('Error!', `${ err.message }`, 'error')
       }, () => this.load(false))

@@ -1,6 +1,35 @@
 import { conexionDBPGP } from '../db/dbConfig.js'
 import { handleHttpError } from '../utils/handleError.js'
 
+export const getIngresosByYear = async(req, resp) => {
+    try {
+        const year = parseInt(req.params.year)
+        const yearStart = year + '-01-01'
+        const yearEnd = year + '-12-31'
+
+        // ✅ Crea el cliente
+        const clientDBPGP = conexionDBPGP()
+
+        // ✅ Se conecta a PGP
+        clientDBPGP.tx(t => {
+            return t.any(`SELECT date_trunc('month', fecha_fact)::date AS fecha,
+                        date_part('month', fecha_fact) AS mes,
+                        sum(total_fact) AS ingresos,
+                        sum(total_fact)::float as total
+                        FROM facturacion where fecha_fact between $1 and $2 GROUP BY fecha, mes order by fecha asc`, [yearStart, yearEnd]
+            )
+        }).then(res => {
+            resp.status(200).json(res)
+        }).catch(err => {
+            handleHttpError(resp, err.message, err.statusCode)
+        }).finally(() => {
+            clientDBPGP.$pool.end()
+        })
+    } catch (err) {
+        handleHttpError(resp, err.message, err.statusCode)
+    }
+}
+
 export const getGastosByYear = async(req, resp) => {
     try {
         const year = parseInt(req.params.year)

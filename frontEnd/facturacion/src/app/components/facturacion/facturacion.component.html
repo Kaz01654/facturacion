@@ -1,6 +1,6 @@
 <div class="card" style="text-align: center;">
   <p-table #dt
-    dataKey="id"
+    dataKey="id_fact"
     (onRowExpand)="onRowExpand($event)"
     (onRowCollapse)="onRowCollapse($event)"
     [tableStyle]="{ 'min-width': '60rem' }"
@@ -13,24 +13,27 @@
     columnResizeMode="expand"
     [rowsPerPageOptions]="[5, 10, 20, 50, 100]"
     currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} facturas"
-    scrollHeight="300px"
-    [globalFilterFields]="['cliente_fact', 'total_fact', 'fecha_fact']">
+    [globalFilterFields]="['cliente_fact.cliente', 'total_fact', 'fecha_fact']">
     <ng-template pTemplate="caption">
       <div class="mr-3" style="display: flex">
         <span class="p-input-icon-left">
           <i class="pi pi-search"></i>
           <input style="width: auto!important;" type="text" pInputText size="20" placeholder="Búsqueda..." (input)="dt.filterGlobal($any($event.target).value, 'contains')" >
         </span>
+        <p-calendar class="margen" [(ngModel)]="fecha_datos" (onSelect)="poblarTabla($event)" (onClearClick)="poblarTabla($event.target.value)" dateFormat="yy-mm-dd" [showIcon]="true" [showButtonBar]="true" [monthNavigator]="true" [yearNavigator]="true" yearRange="2000:2050" [readonlyInput]="true" placeholder="Todas las facturas" [showTransitionOptions]="'0ms'" [hideTransitionOptions]="'0ms'" appendTo="body"></p-calendar>
         <p-button class="p-button-info margen" pTooltip="Nueva factura" [raised]="true" tooltipPosition="bottom" label="Nueva Factura" icon="pi pi-external-link" [loading]="loading" [disabled]="loading"  (onClick)="open()"></p-button>
+        <div class="flex flex-wrap justify-content-end gap-2" style="flex: auto">
+          <p-button label="L. {{ total_ing | number: '1.2-2' }}" icon="pi pi-spin pi-wallet" severity="success" text/>
+        </div>
       </div>
     </ng-template>
     <ng-template pTemplate="header">
       <tr>
-        <th style="width: 5rem"></th>
-        <th pSortableColumn="cliente_fact">Cliente <p-sortIcon field="cliente_fact"/></th>
-        <th pSortableColumn="total_fact">Total <p-sortIcon field="total_fact"/></th>
-        <th pSortableColumn="fecha_fact">Fecha <p-sortIcon field="fecha_fact"/></th>
-        <th pSortableColumn="acciones">Acciones <p-sortIcon field="acciones"/></th>
+        <th class="text-center" style="width: 5rem"></th>
+        <th class="text-center" pSortableColumn="cliente_fact.cliente">Cliente <p-sortIcon field="cliente_fact.cliente"/></th>
+        <th class="text-center" pSortableColumn="cliente_fact.total_fact">Total <p-sortIcon field="cliente_fact.total_fact"/></th>
+        <th class="text-center" pSortableColumn="cliente_fact.fecha_fact">Fecha <p-sortIcon field="cliente_fact.fecha_fact"/></th>
+        <th class="text-center" pSortableColumn="acciones">Acciones <p-sortIcon field="acciones"/></th>
     </tr>
     </ng-template>
     <ng-template pTemplate="body" let-info let-expanded="expanded">
@@ -38,35 +41,38 @@
         <td>
           <p-button type="button" pRipple [pRowToggler]="info" [text]="true" [rounded]="true" [plain]="true" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"/>
         </td>
-        <td class="text-center">{{ info.cliente_fact }}</td>
-        <td class="text-center">L. {{ info.total_fact | number: '1.2-2'}}</td>
-        <td class="text-center">{{ info.fecha_fact }}</td>
+        <td class="text-center">{{ info.cliente_fact.cliente }}</td>
         <td class="text-center">
-          <p-button pTooltip="Editar Factura" tooltipPosition="bottom" icon="pi pi-pencil" [rounded]="true" class="margen2" (onClick)="openUpdate(info)" severity="success"></p-button>
+          <div class="ingreso">
+            L. {{ info.total_fact | number: '1.2-2'}}
+          </div>
+        </td>
+        <td class="text-center">{{ info.fecha_fact | date:"yyyy-MM-dd" }}</td>
+        <td class="text-center">
+          <!-- <p-button pTooltip="Editar Factura" tooltipPosition="bottom" icon="pi pi-pencil" [rounded]="true" class="margen2" (onClick)="openUpdate(info)" severity="success"></p-button> -->
           <p-button pTooltip="Eliminar Factura" tooltipPosition="bottom" icon="pi pi-trash" [rounded]="true" class="margen2" (onClick)="deleteFact(info.id_fact)" severity="danger"></p-button>
         </td>
       </tr>
     </ng-template>
-    <ng-template pTemplate="rowexpansion" let-items>
+    <ng-template pTemplate="rowexpansion" let-info>
       <tr>
         <td colspan="7">
           <div class="p-3">
-            <p-table [value]="items.id_prod" dataKey="id">
+            <p-table [value]="info.items_fact" dataKey="nombre">
               <ng-template pTemplate="header">
                   <tr>
-                    <th pSortableColumn="nombre_prod">Nombre <p-sortIcon field="nombre_prod"/></th>
-                    <th pSortableColumn="cant_prod">Cant <p-sortIcon field="cant_prod"/></th>
-                    <th pSortableColumn="precio_prod">Precio <p-sortIcon field="precio_prod"/></th>
-                    <th pSortableColumn="total">Total <p-sortIcon field="total"/></th>
-                    <th style="width: 4rem"></th>
+                    <th class="text-center" pSortableColumn="nombre">Nombre <p-sortIcon field="nombre"/></th>
+                    <th class="text-center" pSortableColumn="cant">Cant <p-sortIcon field="cant"/></th>
+                    <th class="text-center" pSortableColumn="precio_u">Precio <p-sortIcon field="precio_u"/></th>
+                    <th class="text-center" pSortableColumn="total">Total <p-sortIcon field="total"/></th>
                   </tr>
               </ng-template>
               <ng-template pTemplate="body" let-items>
                   <tr>
-                    <td>{{ items.nombre_prod }}</td>
-                    <td>{{ items.cant_prod }}</td>
-                    <td>{{ items.precio_prod | number: '1.2-2' }}</td>
-                    <td>{{ items.total | number: '1.2-2' }}</td>
+                    <td class="text-center">{{ items.nombre }}</td>
+                    <td class="text-center">{{ items.cant }}</td>
+                    <td class="text-center">{{ items.precio_u | number: '1.2-2' }}</td>
+                    <td class="text-center">{{ items.total | number: '1.2-2' }}</td>
                   </tr>
               </ng-template>
               <ng-template pTemplate="emptymessage">
@@ -250,7 +256,7 @@ header="Header"
               </li>
               <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
                   <div>
-                      <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Impuesto(30%)</span>
+                      <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Impuesto(15%)</span>
                   </div>
                   <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
                       <span class="text-green-500 ml-3 font-medium">L. {{ tax_fact | number: '1.2-2' }}</span>
@@ -258,13 +264,13 @@ header="Header"
               </li>
               <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
                   <div>
-                      <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Total</span>
+                      <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Total a Pagar</span>
                   </div>
                   <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
                       <span class="text-white-500 ml-3 font-medium">L. {{ total_fact | number: '1.2-2' }}</span>
                   </div>
               </li>
-              <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+              <!-- <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
                   <div>
                       <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Pago realizado</span>
                   </div>
@@ -279,7 +285,7 @@ header="Header"
                   <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
                       <span class="text-white-500 ml-3 font-medium">L. {{ saldo_fact | number: '1.2-2' }}</span>
                   </div>
-              </li>
+              </li> -->
             </ul>
           </div>
         </div>
@@ -289,7 +295,7 @@ header="Header"
   </div>
   <ng-template pTemplate="footer">
     <p-button *ngIf="op=='Add'" icon="pi pi-spin pi-sync" (onClick)="agregarFact()" [raised]="true" label="{{ textBottom }}" severity="primary"></p-button>
-    <p-button *ngIf="op=='Edit'" icon="pi pi-search" (onClick)="editarFact()" [raised]="true" label="{{ textBottom }}" severity="success"></p-button>
+    <!-- <p-button *ngIf="op=='Edit'" icon="pi pi-search" (onClick)="editarFact()" [raised]="true" label="{{ textBottom }}" severity="success"></p-button> -->
     <p-button icon="pi pi-eraser" (onClick)="cleanFactura()" [raised]="true" label="{{ btnClean }}" severity="secondary"></p-button>
     <p-button icon="pi pi-times" (onClick)="closeDialog()" [raised]="true" label="Cancelar" severity="danger"></p-button>
   </ng-template>

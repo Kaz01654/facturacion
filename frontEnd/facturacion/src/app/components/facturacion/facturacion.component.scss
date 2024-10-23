@@ -1,11 +1,18 @@
+$color_2: #66BB6A;
+
 ::ng-deep.swal2-container {
-    z-index: 20000 !important
-  }
+  z-index: 20000 !important
+}
 
-  .margen {
-    margin-left: 5px;
-  }
+.margen {
+  margin-left: 5px;
+}
 
-  .margen2 {
-    margin-right: .5rem;
-  }
+.margen2 {
+  margin-right: .5rem;
+}
+
+.ingreso {
+  font-weight: 700;
+  color: $color_2;
+}

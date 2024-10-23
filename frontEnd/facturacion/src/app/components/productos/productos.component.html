@@ -89,7 +89,7 @@ header="Header"
       </div>
     </div>
     <div class="field col-12 md:col-6">
-      <p-dropdown appendTo="body" [options]="listImp" [(ngModel)]="imp"  [filter]="true" [showClear]="true" filterBy="label" placeholder="Seleccione Impuesto"></p-dropdown>
+      <p-dropdown appendTo="body" [options]="listImp" [(ngModel)]="imp" (onChange)="handleOnChange($event)" [filter]="true" [showClear]="true" filterBy="label" placeholder="Seleccione Impuesto"></p-dropdown>
     </div>
     <div class="field col-12 md:col-4">
       <div class="p-inputgroup">
@@ -100,13 +100,13 @@ header="Header"
     <div class="field col-12 md:col-4">
       <div class="p-inputgroup">
         <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="Costo"><i class="pi pi-money-bill"></i></span>
-        <p-inputNumber mode="decimal" [minFractionDigits]="2" locale="en-US" [(ngModel)]="precioProd" placeholder="Costo"></p-inputNumber>
+        <p-inputNumber mode="decimal" [minFractionDigits]="2" locale="en-US" [(ngModel)]="precioProd" (onInput)="handleOnChangeInput($event)" placeholder="Costo"></p-inputNumber>
       </div>
     </div>
     <div class="field col-12 md:col-4">
       <div class="p-inputgroup">
         <span class="p-inputgroup-addon" tooltipPosition="bottom" pTooltip="Utilidad"><i class="pi pi-money-bill"></i></span>
-        <p-inputNumber mode="decimal" [minFractionDigits]="2" locale="en-US" [(ngModel)]="gancProd" placeholder="Utilidad"></p-inputNumber>
+        <p-inputNumber mode="decimal" [minFractionDigits]="2" locale="en-US" [(ngModel)]="gancProd" placeholder="Utilidad" [disabled]="gancProdDis"></p-inputNumber>
       </div>
     </div>
   </div>
